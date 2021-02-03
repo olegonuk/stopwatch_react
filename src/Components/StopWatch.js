@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import './StopWatch.css';
-// import ButtonStopWatch, { updateClock } from '../Components/ButtonStopWatch';
-
 
 export default class StopWatch extends Component {
    constructor(props) {
@@ -12,26 +10,29 @@ export default class StopWatch extends Component {
          timeInterval: null
       };
    };
+   //Очистка интервала
    clearInt() {
       this.setState({
          timeInterval: clearInterval(this.state.timeInterval),
       })
    }
+   //Старт секундомера
    start() {
       this.clearInt();
       this.setState({
          timeInterval: setInterval(() => this.updateClock(), 1000)
       });
    };
+   //Остановка секундомера
    stop() {
       this.clearInt()
-      // clearInterval(this.state.timeInterval);
       this.setState({
          time: `0${0}:0${0}:0${0}`,
          milliseconds: 1000,
          timeInterval: null
       });
    }
+   //Сброс секундомера
    reset() {
       if (this.state.milliseconds !== 1000) {
          this.stop();
@@ -40,10 +41,11 @@ export default class StopWatch extends Component {
          return false;
       }
    }
+   //Остановка секундомер "сделано по обычному даблКлик"
    wait() {
       this.clearInt();
    }
-
+   //Отрисовка секундомера на дисплей
    updateClock() {
       let dateTimer = new Date(this.state.milliseconds);
 
@@ -71,7 +73,6 @@ export default class StopWatch extends Component {
                   <button className="btn" onClick={() => this.stop()}>Stop</button>
                   <button className="btn" onDoubleClick={() => this.wait()}>Wait</button>
                   <button className="btn" onClick={() => this.reset()}>Reset</button>
-                  {/* <ButtonStopWatch setting={this.state} /> */}
                </div>
             </div>
          </div>
