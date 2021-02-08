@@ -1,81 +1,58 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from "react";
 import './StopWatch.css';
+import { interval, Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
-export default class StopWatch extends Component {
-   constructor(props) {
-      super(props)
-      this.state = {
-         time: `0${0}:0${0}:0${0}`,
-         milliseconds: 1000,
-         timeInterval: null
+
+export default function StopWatch() {
+   const [sec, setSec] = useState(0);
+   const [status, setStatus] = useState("stop");
+
+   useEffect(() => {
+      const unsubscribe$ = new Subject();
+      interval(1000)
+         .pipe(takeUntil(unsubscribe$))
+         .subscribe(() => {
+            if (status === "run") {
+               setSec(val => val + 1000);
+            }
+         });
+      return () => {
+         unsubscribe$.next();
+         unsubscribe$.complete();
       };
-   };
-   //Очистка интервала
-   clearInt() {
-      this.setState({
-         timeInterval: clearInterval(this.state.timeInterval),
-      })
-   }
-   //Старт секундомера
-   start() {
-      this.clearInt();
-      this.setState({
-         timeInterval: setInterval(() => this.updateClock(), 1000)
-      });
-   };
-   //Остановка секундомера
-   stop() {
-      this.clearInt()
-      this.setState({
-         time: `0${0}:0${0}:0${0}`,
-         milliseconds: 1000,
-         timeInterval: null
-      });
-   }
-   //Сброс секундомера
-   reset() {
-      if (this.state.milliseconds !== 1000) {
-         this.stop();
-         this.start();
-      } else {
-         return false;
-      }
-   }
-   //Остановка секундомер "сделано по обычному даблКлик"
-   wait() {
-      this.clearInt();
-   }
-   //Отрисовка секундомера на дисплей
-   updateClock() {
-      let dateTimer = new Date(this.state.milliseconds);
+   }, [status]);
 
-      let seconds = dateTimer.getUTCSeconds();
-      let minutes = dateTimer.getUTCMinutes();
-      let hours = dateTimer.getUTCHours();
+   const start = React.useCallback(() => {
+      setStatus("run");
+   }, []);
 
-      function addZero(t) {
-         return t = t < 10 ? '0' + t : t
-      };
-      this.setState({
-         time: `${addZero(hours)}:${addZero(minutes)}:${addZero(seconds)}`,
-         milliseconds: this.state.milliseconds + 1000,
-      })
-   };
+   const stop = React.useCallback(() => {
+      setStatus("stop");
+      setSec(0);
+   }, []);
 
-   render() {
+   const reset = React.useCallback(() => {
+      setSec(0);
+   }, []);
 
-      return (
-         <div>
-            <div className="stopWatch__wrapper">
-               <div className="display__stopwatch">{this.state.time}</div>
-               <div className="btn__block">
-                  <button className="btn" onClick={() => this.start()}>Start</button>
-                  <button className="btn" onClick={() => this.stop()}>Stop</button>
-                  <button className="btn" onDoubleClick={() => this.wait()}>Wait</button>
-                  <button className="btn" onClick={() => this.reset()}>Reset</button>
-               </div>
+   const wait = React.useCallback(() => {
+      setStatus("wait");
+   }, []);
+
+   /*===================================================*/
+
+   return (
+      <div>
+         <div className="stopWatch__wrapper">
+            <div className="display__stopwatch">{new Date(sec).toISOString().slice(11, 19)}</div>
+            <div className="btn__block">
+               <button className="btn" onClick={start}>Start</button>
+               <button className="btn" onClick={stop}>Stop</button>
+               <button className="btn" onDoubleClick={wait}>Wait</button>
+               <button className="btn" onClick={reset}>Reset</button>
             </div>
          </div>
-      )
-   }
+      </div>
+   )
 }
